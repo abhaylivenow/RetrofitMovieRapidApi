@@ -61,6 +61,13 @@ class SearchActivity : ComponentActivity() {
             }
 
             SearchScreenUI(viewModel = moviesViewModel)
+            val isLoading = moviesViewModel.searchLoadingLD.collectAsState().value
+
+            if(isLoading) {
+                ShowLoader()
+            } else {
+                // hideLoader
+            }
         }
     }
 }

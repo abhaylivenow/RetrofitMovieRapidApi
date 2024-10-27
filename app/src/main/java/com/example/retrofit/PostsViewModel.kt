@@ -19,6 +19,9 @@ class PostsViewModel(
     val movieFromIdFlow = MutableStateFlow<List<MovieDetail>>(emptyList())
     val movieGenreFlow = MutableStateFlow<GenreResponse?>(null)
 
+    val homeLoadingLD = MutableStateFlow<Boolean>(false)
+    val searchLoadingLD = MutableStateFlow<Boolean>(false)
+
     init {
         getPopularMovies()
         //getSearchedMovie("iron")
@@ -27,12 +30,17 @@ class PostsViewModel(
     private fun getPopularMovies() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
+                // loader is visible
+                homeLoadingLD.value = true
                 Log.i("PostViewModel47945798","network call begin")
                 val getMovieIdList = repository.getPopularMoviesId()
                 getMovieById(getMovieIdList)
                 Log.i("PostViewModel Success","no error occurred")
+                    // loader is gone
             } catch (e: Exception) {
-                Log.i("PostViewModel Error","some error occurred")
+                // loader is gone
+                homeLoadingLD.value = false
+                Log.i("PostViewModel Error","some error occurred ${e.message}")
             }
 
         }
@@ -42,13 +50,20 @@ class PostsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val movieFromId = repository.getMovieById(ids)
             movieFromIdFlow.value = movieFromId
+            homeLoadingLD.value = false
         }
     }
 
     fun getSearchedMovie(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val result = repository.getSearchedMovieList(query)
-            searchedMovieList.value = result
+            try {
+                searchLoadingLD.value = true
+                val result = repository.getSearchedMovieList(query)
+                searchedMovieList.value = result
+                searchLoadingLD.value = false
+            } catch (e: Exception) {
+                searchLoadingLD.value = false
+            }
         }
     }
 
